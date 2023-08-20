@@ -11,6 +11,7 @@ export const ImageGalleryBlock = styled.ul`
   list-style: none;
   margin-left: auto;
   margin-right: auto;
+  overflow: hidden;
 `;
 
 export const ImageGalleryItemBlock = styled.li`
