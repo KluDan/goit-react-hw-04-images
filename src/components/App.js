@@ -23,7 +23,7 @@ export const App = () => {
     fetchImagesAndUpdateState(query, page);
   }, [query, page]);
 
-  const fetchImagesAndUpdateState = async query => {
+  const fetchImagesAndUpdateState = async (query, page) => {
     try {
       const newQueryExtracted = query.slice(query.indexOf('/') + 1);
       setLoading(true);
