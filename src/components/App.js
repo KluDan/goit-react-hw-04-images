@@ -40,7 +40,7 @@ export const App = () => {
     };
 
     fetchImagesAndUpdateState(query, page);
-  }, [query, page]);
+  }, [query, page, firstRequestMade]);
 
   const handleLoadMore = e => {
     e.preventDefault();
