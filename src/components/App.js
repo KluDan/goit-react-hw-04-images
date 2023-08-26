@@ -1,48 +1,39 @@
 import { GlobalStyle } from './GlobalStyle';
-import { Component } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
 import { fetchImages } from './API';
+import { useEffect, useState } from 'react';
 
-export class App extends Component {
-  state = {
-    query: '',
-    images: [],
-    page: 1,
-    loading: false,
-    firstRequestMade: false,
-  };
-  changeQuery = newQuery => {
-    this.setState({
-      query: `${Date.now()}/${newQuery}`,
-      images: [],
-      page: 1,
-    });
+export const App = () => {
+  const [query, setQuery] = useState('');
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [firstRequestMade, setFirstRequestMade] = useState(false);
+
+  const changeQuery = newQuery => {
+    setQuery(`${Date.now()}/${newQuery}`);
+    setImages([]);
+    setPage(1);
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    const { query, page } = this.state;
+  useEffect(() => {
+    if (query === '') return;
+    fetchImagesAndUpdateState(query, page);
+  }, [query, page]);
 
-    if (prevState.query !== query || prevState.page !== page) {
-      this.fetchImagesAndUpdateState(query, page);
-    }
-  }
-
-  fetchImagesAndUpdateState = async query => {
+  const fetchImagesAndUpdateState = async query => {
     try {
       const newQueryExtracted = query.slice(query.indexOf('/') + 1);
-      this.setState({ loading: true });
-      const responseData = await fetchImages(
-        newQueryExtracted,
-        this.state.page
-      );
-      this.setState(prevState => ({
-        images: [...prevState.images, ...responseData.hits],
-        loading: false,
-      }));
-      if (!this.state.firstRequestMade) {
-        this.setState({ firstRequestMade: true });
+      setLoading(true);
+
+      const responseData = await fetchImages(newQueryExtracted, page);
+      setImages(prevImages => [...prevImages, ...responseData.hits]);
+      setLoading(false);
+
+      if (!firstRequestMade) {
+        setFirstRequestMade(true);
       }
       console.log(responseData);
     } catch (error) {
@@ -50,28 +41,20 @@ export class App extends Component {
     }
   };
 
-  handleLoadMore = e => {
+  const handleLoadMore = e => {
     e.preventDefault();
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+    setPage(prevPage => prevPage + 1);
   };
 
-  render() {
-    const { images, loading, firstRequestMade } = this.state;
-
-    return (
-      <>
-        <Searchbar submitQuery={this.changeQuery} />
-        <ImageGallery images={images} loading={loading} />
-        {firstRequestMade && images.length === 0 && !loading && (
-          <div className="no-images-message">No images found.</div>
-        )}
-        {images.length >= 12 && !loading && (
-          <Button click={this.handleLoadMore} />
-        )}
-        <GlobalStyle />
-      </>
-    );
-  }
-}
+  return (
+    <>
+      <Searchbar submitQuery={changeQuery} />
+      <ImageGallery images={images} loading={loading} />
+      {firstRequestMade && images.length === 0 && !loading && (
+        <div className="no-images-message">No images found.</div>
+      )}
+      {images.length >= 12 && !loading && <Button click={handleLoadMore} />}
+      <GlobalStyle />
+    </>
+  );
+};
