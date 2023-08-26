@@ -20,26 +20,27 @@ export const App = () => {
 
   useEffect(() => {
     if (query === '') return;
+
+    const fetchImagesAndUpdateState = async (query, page) => {
+      try {
+        const newQueryExtracted = query.slice(query.indexOf('/') + 1);
+        setLoading(true);
+
+        const responseData = await fetchImages(newQueryExtracted, page);
+        setImages(prevImages => [...prevImages, ...responseData.hits]);
+        setLoading(false);
+
+        if (!firstRequestMade) {
+          setFirstRequestMade(true);
+        }
+        console.log(responseData);
+      } catch (error) {
+        console.error('Error fetching images:', error);
+      }
+    };
+
     fetchImagesAndUpdateState(query, page);
   }, [query, page]);
-
-  const fetchImagesAndUpdateState = async (query, page) => {
-    try {
-      const newQueryExtracted = query.slice(query.indexOf('/') + 1);
-      setLoading(true);
-
-      const responseData = await fetchImages(newQueryExtracted, page);
-      setImages(prevImages => [...prevImages, ...responseData.hits]);
-      setLoading(false);
-
-      if (!firstRequestMade) {
-        setFirstRequestMade(true);
-      }
-      console.log(responseData);
-    } catch (error) {
-      console.error('Error fetching images:', error);
-    }
-  };
 
   const handleLoadMore = e => {
     e.preventDefault();
